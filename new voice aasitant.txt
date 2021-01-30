@@ -1,0 +1,252 @@
+import datetime
+import subprocess
+from datetime import datetime
+import os
+import pyjokes
+import pyttsx3
+import pywhatkit
+import pyautogui
+import speech_recognition as sr
+import wikipedia
+from playsound import playsound
+import random
+import json
+import requests
+from urllib.request import urlopen
+import webbrowser as wb
+import wolframalpha
+
+listener = sr.Recognizer()
+engine = pyttsx3.init()
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[0].id)
+
+
+def talk(text):
+    engine.say(text)
+    engine.runAndWait()
+
+
+def take_command():
+    try:
+        with sr.Microphone() as source:
+            print('Listening...')
+            voice = listener.listen(source)
+            command = listener.recognize_google(voice)
+            command = command.lower()
+
+
+    except:
+        pass
+    return command
+
+
+def run():
+    command = take_command()
+    print(command)
+
+    if 'play' in command:
+        song = command.replace('play', '')
+        talk('playing ' + song)
+        pywhatkit.playonyt(song)
+
+    elif 'search' in command:
+        search = command.replace('search', '')
+        talk('searching ' + search)
+        pywhatkit.search(search)
+
+    elif 'who is' in command:
+        person = command.replace('who is', '')
+
+        try:
+            info = wikipedia.summary(person, 3)
+            print(info)
+            talk(info)
+        except :
+
+            try:
+                from googlesearch import search
+                print("These are the results Found.")
+                talk('These are the results Found.')
+            except ImportError:
+                print("No Results Found.")
+
+            query = command
+            for j in search(query, tld="com", num=10, stop=10, pause=2):
+                print(j)
+
+    elif 'whatsapp' in command:
+        talk('Please enter the phone number with country code(+91):')
+        num = input('Please enter the phone number with country code(+91):')
+        talk('Please enter the message :')
+        msg = input('Please enter the message :')
+        talk('Please enter the time')
+        hr = int(input('Please enter the time in hour(24) :'))
+        min = int(input('Please enter the time in minutes :'))
+        txt = 'Sending message'
+        talk(txt)
+        pywhatkit.sendwhatmsg(num, msg, hr, min)
+
+    elif 'open calculator' in command:
+        talk('opening calculator')
+        subprocess.call('calc.exe')
+
+    elif 'open word document' in command:
+        talk('Opening Word document')
+        x = r'WINWORD.EXE'
+        os.startfile(x)
+
+    elif 'open notepad' in command:
+        talk('Open Notepad')
+        y = r'NOTEPAD.EXE'
+        os.startfile(y)
+
+    elif 'screenshot' in command:
+        talk('taking screenshot')
+        pyautogui.PAUSE = 4.0
+
+        img1 = pyautogui.screenshot()
+        x = random.randint(0, 100)
+        img1.save(r'C:\Users\personal\PycharmProjects\pythonProject3\images\ image{} .jpg'.format(x))
+        talk('Screenshot saved ')
+
+    elif 'quick note' in command:
+        talk('Would you like to read or write the quick note')
+        talk('Enter read or write:')
+        p = input('Read/Write: ').lower()
+        if p == 'read':
+            filesize = os.path.getsize("memory.txt")
+            if filesize == 0:
+                talk('Quick note is empty!!')
+            else:
+                rem = open('memory.txt', 'r')
+                talk('You asked me to remember that ' + rem.read())
+
+        elif p == 'write':
+            talk('What should I remember')
+            x = take_command()
+            rem = open('memory.txt', 'w')
+            rem.write(x)
+            rem.close()
+
+        else:
+            talk('Unable to perform operation')
+
+    elif 'news' in command:
+        try:
+            jsonObj = urlopen(
+                'http://newsapi.org/v2/everything?q=apple&from=2021-01-10&to=2021-01-10&sortBy=popularity&apiKey=50f00cec9aab4e3984ad5129762f8b59')
+            data = json.load(jsonObj)
+            i = 1
+            talk('here are some top news from the times of india')
+            print('''=============== TOP HEADLINES ============''' + '\n')
+
+            for item in data['articles']:
+                print(str(i) + '. ' + item['title'] + '\n')
+                print(item['description'] + '\n')
+                talk(str(i) + '. ' + item['title'] + '\n')
+                i += 1
+
+        except Exception as e:
+            print(str(e))
+
+    elif 'joke' in command:
+        print(pyjokes.get_joke())
+        talk(pyjokes.get_joke())
+
+    elif 'where is' in command:
+        query = command.replace('where is', '')
+        location = query
+        talk('Navigating to' + location)
+        wb.open_new_tab('https:/www.google.com/maps/place/' + location)
+
+    elif 'navigate' in command:
+        query = command.replace('navigate', '')
+        location = query
+        talk('Navigating to' + location)
+        wb.open_new_tab('https:/www.google.com/maps/place/' + location)
+
+    elif ('set alarm' or 'alarm') in command:
+        alarm_time = input('enter time')
+        while True:
+            lctime = datetime.now().strftime("%H:%M")
+            if lctime == alarm_time:
+                playsound(r'C:\Users\personal\PycharmProjects\pythonProject3\song.mp3')
+                talk('Alarm Reminder...')
+                break
+
+    elif ('date' or 'day' or 'time') in command:
+        time1 = datetime.now().strftime('%I:%M %p')
+        talk('The Current time is ' + time1)
+        date1 = datetime.now().day
+        month1 = datetime.now()
+        year1 = datetime.now().year
+        talk('The Current date is')
+        talk(date1)
+        talk(month1.strftime('%B'))
+        talk(year1)
+        talk('And Today is')
+        talk(month1.strftime('%A'))
+
+    elif "what is" in command:
+        client = wolframalpha.Client("EV3T7K-XQAYYVYA33")
+        res = client.query(command)
+
+        try:
+            print(next(res.results).text)
+            talk(next(res.results).text)
+        except :
+
+            try:
+                from googlesearch import search
+                print("These are the results Found.")
+                talk('These are the results Found.')
+            except ImportError:
+                print("No Results Found.")
+
+            query = command
+            for j in search(query, tld="com", num=10, stop=10, pause=2):
+                print(j)
+
+    elif 'stop'   in command:
+        talk('okay,have a great day')
+        exit()
+    elif 'who are you' in command:
+        talk('Iam Mister cool!!')
+
+    else:
+        client = wolframalpha.Client("EV3T7K-XQAYYVYA33")
+        res = client.query(command)
+
+        try:
+            print(next(res.results).text)
+            talk(next(res.results).text)
+        except:
+            print("These are the results Found.")
+            talk('These are the results Found.')
+            try:
+                from googlesearch import search
+            except ImportError:
+                print("No Results Found.")
+
+            query=command
+            for j in search(query, tld="com", num=10, stop=10, pause=2):
+                print(j)
+
+
+
+
+
+
+
+
+
+
+
+talk('Hello!!! Iam Mr Cool,AI Virtual Assistant')
+talk( 'I can help you to perform tasks like searching')
+talk('playing songs,set alarm and many more ')
+talk('How can I help you.')
+while True:
+    run()
+
